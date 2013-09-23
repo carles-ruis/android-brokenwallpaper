@@ -4,7 +4,7 @@
     <string name="app_name">BrokenWallpaper</string>
     <string name="description">BrokenWallpaper</string>
     <string name="title_activity_broken_wallpaper">Broken Wallpaper</string>
-    <string name="brokenEnabled">Break enabled</string>
-    <string name="clearEnabled">Clear enabled</string>
+    <string name="brokenEnabled">Activa romper pantalla</string>
+    <string name="clearEnabled">Activa limpiar pantalla</string>
     
 </resources>

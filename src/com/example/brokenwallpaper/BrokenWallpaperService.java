@@ -9,6 +9,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.preference.PreferenceManager;
 import android.service.wallpaper.WallpaperService;
 import android.util.Log;
@@ -47,13 +49,15 @@ private final Image[] IMAGES = new Image[] { new Image(R.drawable.img1, 0.52f, 0
 private class BrokenWallpaperEngine extends Engine implements SharedPreferences.OnSharedPreferenceChangeListener {
 
 private static final String TAG = "Broken Wallpaper";
+private static final String PREF_BROKEN_ENABLED = "brokenEnabled";
+private static final String PREF_CLEAR_ENABLED = "clearEnabled";
+
 private Paint paint= iniPaint();
 private Random r = new Random();
 private BitmapDrawable bitmap = null; 
-
+private SoundPool soundPool;
+private int[] sounds;
 private SharedPreferences prefs;
-private static final String KEY_BROKEN_ENABLED = "brokenEnabled";
-private static final String KEY_CLEAR_ENABLED = "clearEnabled";
 private boolean brokenEnabled;
 private boolean clearEnabled;
 
@@ -61,10 +65,11 @@ public BrokenWallpaperEngine() {
 	prefs = PreferenceManager.getDefaultSharedPreferences(BrokenWallpaperService.this);
 	prefs.registerOnSharedPreferenceChangeListener(this);
 	onSharedPreferenceChanged(prefs, null);
-//	onSharedPreferenceChanged(prefs, KEY_BROKEN_ENABLED);
-//	onSharedPreferenceChanged(prefs, KEY_CLEAR_ENABLED);
+	soundPool = new SoundPool(1,AudioManager.STREAM_MUSIC,0);
+	sounds = new int[] {
+		soundPool.load(BrokenWallpaperService.this, R.raw.sound1,0), 
+		soundPool.load(BrokenWallpaperService.this, R.raw.sound2,0) }; 
 }
-
 
 /*- ********************************************************************************** */
 /*- *********** WALLPAPER ENGINE OVERRIDE ************* */
@@ -82,13 +87,6 @@ public void onVisibilityChanged(boolean visible) {
 	}
 }
 
-//@Override
-//public void onOffsetsChanged(float xOffset, float yOffset, float xOffsetStep, float yOffsetStep, int xPixelOffset,
-//	int yPixelOffset) {
-//	Log.w(TAG, "onOffsetsChanged");
-//    super.onOffsetsChanged(xOffset, yOffset, xOffsetStep, yOffsetStep, xPixelOffset, yPixelOffset);
-//}	
-
 @Override
 public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 	Log.w(TAG, "onSurfaceChanged");
@@ -101,6 +99,7 @@ public void onTouchEvent(MotionEvent event) {
 		float x = event.getX();
 		float y = event.getY();
 		mergeAndDrawBitmap(x, y);
+		playSound();
 	} else if (event.getAction() == MotionEvent.ACTION_MOVE && clearEnabled) {
 		bitmap = null;
 		draw();
@@ -110,8 +109,8 @@ public void onTouchEvent(MotionEvent event) {
 
 @Override
 public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-	brokenEnabled = prefs.getBoolean(KEY_BROKEN_ENABLED, true);
-	clearEnabled = prefs.getBoolean(KEY_CLEAR_ENABLED, true);
+	brokenEnabled = prefs.getBoolean(PREF_BROKEN_ENABLED, true);
+	clearEnabled = prefs.getBoolean(PREF_CLEAR_ENABLED, true);
 }
 
 /*- ********************************************************************************** */
@@ -171,5 +170,9 @@ private Paint iniPaint() {
 	return ret;
 }
 
+private void playSound() {
+	int id = sounds[r.nextInt(sounds.length)];
+	soundPool.play(id, 1, 1, 1, 0, 1.99f);
+}
 }
 }
